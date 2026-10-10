@@ -1,12 +1,27 @@
 ﻿@echo off
-rem Helmer AI - one-click install (UAC Yes only; no GitHub sign-in).
-rem Double-click this file. Safe to re-run.
+setlocal EnableExtensions
+rem Helmer AI one-click install. UAC Yes only. No irm/iex. No GitHub login.
+rem Double-click this file from the unzipped folder (same folder as Install-HelmerAI.ps1).
+
 net session >nul 2>&1
 if %errorlevel% neq 0 (
-  powershell -NoProfile -Command "Start-Process -Verb RunAs -FilePath '%~f0'"
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
   exit /b
 )
-powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1 | iex"
+
+cd /d "%~dp0"
+if not exist "%~dp0Install-HelmerAI.ps1" (
+  echo ERROR: Install-HelmerAI.ps1 not found next to this .bat
+  echo Unzip the full HelmerAI-Install.zip and run Install-HelmerAI.bat from that folder.
+  pause
+  exit /b 1
+)
+
+echo Running Install-HelmerAI.ps1 -Unattended ...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Install-HelmerAI.ps1" -Role field -NodeName surface -Unattended
+set ERR=%ERRORLEVEL%
 echo.
+echo Exit code: %ERR%
 echo Log: C:\HelmerAI\install.log
-pause
+if %ERR% neq 0 pause
+exit /b %ERR%

@@ -1,9 +1,8 @@
-# Helmer AI — one-click Windows install (no Drive download, no GitHub login)
+﻿# Helmer AI - one-click Windows install (no GitHub login)
 #
-# EASIEST: double-click Install-HelmerAI.bat (inside HelmerAI-Install.zip from Drive or the GitHub release)
+# 1) Download HelmerAI-Install.zip (Drive or GitHub release)
+# 2) Unzip the WHOLE folder
+# 3) Double-click Install-HelmerAI.bat
+# 4) UAC -> Yes (only prompt)
 #
-# OR Admin PowerShell one line:
-irm https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1 | iex
-#
-# Only prompt: Windows UAC → Yes.
-# Defaults: role=field, node=surface. Package comes from the public GitHub release (no secrets).
+# The .bat runs Install-HelmerAI.ps1 from the same folder (-File, not irm/iex).
