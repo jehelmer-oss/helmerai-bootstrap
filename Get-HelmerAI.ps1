@@ -1,4 +1,4 @@
-# Helmer AI bootstrap (secret-free, no GitHub sign-in).
+﻿# Helmer AI bootstrap (secret-free, no GitHub sign-in).
 # One-liner (Admin PowerShell) OR double-click Install-HelmerAI.bat:
 #   irm https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1 | iex
 # Optional env before running:
@@ -15,7 +15,7 @@ $Root = if ($env:HELMERAI_ROOT) { $env:HELMERAI_ROOT } else { 'C:\HelmerAI' }
 $PkgUrl = if ($env:HELMERAI_PKG_URL) { $env:HELMERAI_PKG_URL } else {
     'https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest/download/helmerai-windows.zip'
 }
-$BootstrapVer = '1.1.0'
+$BootstrapVer = '1.1.1'
 
 function Update-HaiPath {
     $machine = [Environment]::GetEnvironmentVariable('Path', 'Machine')
@@ -71,7 +71,7 @@ Expand-Archive -LiteralPath $zip -DestinationPath $stage -Force
 $installer = Get-ChildItem -LiteralPath $stage -Recurse -Filter 'Install-HelmerAI.ps1' | Select-Object -First 1
 if (-not $installer) { throw "Install-HelmerAI.ps1 not found inside package" }
 $srcDir = $installer.DirectoryName
-# Keep a local copy for the node updater (manifest + scripts) — no git clone needed
+# Keep a local copy for the node updater (manifest + scripts) - no git clone needed
 $local = Join-Path $Root 'src\windows-pkg'
 if (Test-Path $local) { Remove-Item $local -Recurse -Force }
 New-Item -ItemType Directory -Path (Split-Path $local) -Force | Out-Null

@@ -1,5 +1,5 @@
-@echo off
-rem Helmer AI — one-click install (UAC Yes only; no GitHub sign-in).
+﻿@echo off
+rem Helmer AI - one-click install (UAC Yes only; no GitHub sign-in).
 rem Double-click this file. Safe to re-run.
 net session >nul 2>&1
 if %errorlevel% neq 0 (
