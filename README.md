@@ -1,8 +1,12 @@
-# Helmer AI bootstrap (public, secret-free)
+# Helmer AI bootstrap (public, secret-free, unattended)
 
-Drive flags `.ps1` / `.cmd` / installer zips as abuse. Use this instead.
+One UAC Yes. No GitHub sign-in. No other prompts.
 
-## Windows (Surface)
+## Double-click
+
+Download `HelmerAI-Install.zip` from [Releases](https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest), unzip, double-click `Install-HelmerAI.bat`.
+
+## One-liner
 
 Admin PowerShell:
 
@@ -10,8 +14,9 @@ Admin PowerShell:
 irm https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1 | iex
 ```
 
-Defaults: `-Role field -NodeName surface`. Set `$env:HELMERAI_ROLE` / `$env:HELMERAI_NODE` before the one-liner to override.
+Downloads `helmerai-windows.zip` from this repo’s latest release (public), extracts, runs `Install-HelmerAI.ps1 -Unattended`.
 
-Pulls private `jehelmer-oss/mac-feed` via your GitHub login, then runs `windows/Install-HelmerAI.ps1`.
+Defaults: `role=field`, `node=surface`. Override with `$env:HELMERAI_ROLE` / `$env:HELMERAI_NODE`.
 
-No API keys, tokens, or passwords in this repo.
+No API keys, tokens, or passwords in this repo or the release zip.
+Ongoing node updates use the public release manifest (or a read-only deploy key provisioned later over Tailscale — never embedded here).

@@ -1,12 +1,9 @@
-# Helmer AI — Surface / Windows install (no Drive download needed)
-# 1) Open PowerShell as Administrator
-# 2) Paste this ONE line and press Enter:
-
-irm https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1 | iex
-
-# Defaults: role=field, node=surface. Override first if needed:
-#   $env:HELMERAI_ROLE='field'; $env:HELMERAI_NODE='surface'
-# Dry-run only:
-#   $env:HELMERAI_DRYRUN='1'; irm https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1 | iex
+# Helmer AI — one-click Windows install (no Drive download, no GitHub login)
 #
-# Sign in to GitHub when asked (jehelmer-oss/mac-feed). No secrets in this script.
+# EASIEST: double-click Install-HelmerAI.bat (inside HelmerAI-Install.zip from Drive or the GitHub release)
+#
+# OR Admin PowerShell one line:
+irm https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1 | iex
+#
+# Only prompt: Windows UAC → Yes.
+# Defaults: role=field, node=surface. Package comes from the public GitHub release (no secrets).

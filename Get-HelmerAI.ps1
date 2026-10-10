@@ -1,71 +1,99 @@
-# Helmer AI bootstrap (secret-free). Justin Surface / any Windows PC.
-# One-liner (Admin PowerShell):
+# Helmer AI bootstrap (secret-free, no GitHub sign-in).
+# One-liner (Admin PowerShell) OR double-click Install-HelmerAI.bat:
 #   irm https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1 | iex
 # Optional env before running:
-#   $env:HELMERAI_ROLE = 'field'          # worker|field (default field on this bootstrap)
+#   $env:HELMERAI_ROLE = 'field'          # worker|field (default field)
 #   $env:HELMERAI_NODE  = 'surface'       # node name
 #   $env:HELMERAI_DRYRUN = '1'            # dry-run only
-#No secrets. Pulls private jehelmer-oss/mac-feed via YOUR GitHub login, then runs Install-HelmerAI.ps1.
+# Pulls the public release zip (no login). No secrets in this script.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $Role = if ($env:HELMERAI_ROLE) { $env:HELMERAI_ROLE } else { 'field' }
 $Node = if ($env:HELMERAI_NODE) { $env:HELMERAI_NODE } else { 'surface' }
 $Dry = [bool]($env:HELMERAI_DRYRUN -eq '1')
-$Repo = 'jehelmer-oss/mac-feed'
 $Root = if ($env:HELMERAI_ROOT) { $env:HELMERAI_ROOT } else { 'C:\HelmerAI' }
+$PkgUrl = if ($env:HELMERAI_PKG_URL) { $env:HELMERAI_PKG_URL } else {
+    'https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest/download/helmerai-windows.zip'
+}
+$BootstrapVer = '1.1.0'
 
-# Self-elevate
-$id = [Security.Principal.WindowsIdentity]::GetCurrent()
-$p = New-Object Security.Principal.WindowsPrincipal($id)
-if (-not $p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+function Update-HaiPath {
+    $machine = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $user = [Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path = @($machine, $user | Where-Object { $_ }) -join ';'
+}
+
+function Invoke-NativeOk {
+    param([scriptblock]$Cmd)
+    $prev = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        & $Cmd | Out-Null
+        return ($LASTEXITCODE -eq 0)
+    } catch {
+        return $false
+    } finally {
+        $ErrorActionPreference = $prev
+    }
+}
+
+# Self-elevate (only prompt: UAC Yes)
+try {
+    $id = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $prin = New-Object Security.Principal.WindowsPrincipal($id)
+    $isAdmin = $prin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+} catch {
+    $isAdmin = $true  # non-Windows host / dry tooling
+}
+if (-not $isAdmin) {
     $arg = "-NoProfile -ExecutionPolicy Bypass -Command `"irm 'https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1' | iex`""
     Start-Process -Verb RunAs -FilePath powershell.exe -ArgumentList $arg | Out-Null
     return
 }
 
-function Ensure-WingetId([string]$Id, [string]$Label) {
-    $have = winget list -e --id $Id --accept-source-agreements 2>$null | Out-String
-    if ($have -notmatch [regex]::Escape($Id)) {
-        Write-Host "Installing $Label..." -ForegroundColor Yellow
-        winget install -e --id $Id --silent --accept-package-agreements --accept-source-agreements --disable-interactivity | Out-Null
-    }
-}
-Write-Host "Helmer AI bootstrap -> role=$Role node=$Node dry=$Dry" -ForegroundColor Cyan
-Ensure-WingetId 'Git.Git' 'Git'
-Ensure-WingetId 'GitHub.cli' 'GitHub CLI'
-$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
-$gh = @(
-    "$env:ProgramFiles\GitHub CLI\gh.exe",
-    (Get-Command gh -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -First 1)
-) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
-if (-not $gh) { throw 'gh not found after winget install' }
+Write-Host "Helmer AI bootstrap $BootstrapVer -> role=$Role node=$Node dry=$Dry (no GitHub login)" -ForegroundColor Cyan
+New-Item -ItemType Directory -Path $Root -Force | Out-Null
+$stage = Join-Path $env:TEMP ("helmerai-pkg-" + [guid]::NewGuid().ToString('n'))
+$zip = Join-Path $env:TEMP 'helmerai-windows.zip'
+New-Item -ItemType Directory -Path $stage -Force | Out-Null
 
-& $gh auth status -h github.com 2>$null
-if ($LASTEXITCODE -ne 0) {
-    Write-Host 'Sign in to GitHub (need access to jehelmer-oss/mac-feed)...' -ForegroundColor Yellow
-    & $gh auth login -h github.com -p https -w | Out-Host
+Write-Host "Downloading package..." -ForegroundColor Cyan
+try {
+    Invoke-WebRequest -Uri $PkgUrl -OutFile $zip -UseBasicParsing
+} catch {
+    throw "download failed from $PkgUrl : $($_.Exception.Message)"
 }
-& $gh auth status -h github.com | Out-Host
+if (-not (Test-Path $zip) -or (Get-Item $zip).Length -lt 1000) { throw "package zip missing/too small: $zip" }
 
-$Src = Join-Path $Root 'src\mac-feed'
-New-Item -ItemType Directory -Path (Split-Path $Src) -Force | Out-Null
-if (Test-Path (Join-Path $Src '.git')) {
-    Write-Host "Pulling $Repo ..." -ForegroundColor Cyan
-    & $gh -C $Src repo sync 2>$null
-    if ($LASTEXITCODE -ne 0) { git -C $Src pull --ff-only }
-} else {
-    if (Test-Path $Src) { Remove-Item $Src -Recurse -Force }
-    Write-Host "Cloning $Repo ..." -ForegroundColor Cyan
-    & $gh repo clone $Repo $Src -- --depth 1
-    if ($LASTEXITCODE -ne 0) { throw "clone failed: $Repo" }
-}
+Write-Host "Extracting..." -ForegroundColor Cyan
+Expand-Archive -LiteralPath $zip -DestinationPath $stage -Force
+# Zip may contain a single top folder or flat windows files
+$installer = Get-ChildItem -LiteralPath $stage -Recurse -Filter 'Install-HelmerAI.ps1' | Select-Object -First 1
+if (-not $installer) { throw "Install-HelmerAI.ps1 not found inside package" }
+$srcDir = $installer.DirectoryName
+# Keep a local copy for the node updater (manifest + scripts) — no git clone needed
+$local = Join-Path $Root 'src\windows-pkg'
+if (Test-Path $local) { Remove-Item $local -Recurse -Force }
+New-Item -ItemType Directory -Path (Split-Path $local) -Force | Out-Null
+Copy-Item -LiteralPath $srcDir -Destination $local -Recurse -Force
+$installerPath = Join-Path $local 'Install-HelmerAI.ps1'
+if (-not (Test-Path $installerPath)) { $installerPath = (Get-ChildItem -LiteralPath $local -Recurse -Filter 'Install-HelmerAI.ps1' | Select-Object -First 1).FullName }
 
-$Installer = Join-Path $Src 'windows\Install-HelmerAI.ps1'
-if (-not (Test-Path $Installer)) { throw "missing $Installer" }
-$psArgs = @('-NoProfile','-ExecutionPolicy','Bypass','-File',$Installer,'-Role',$Role,'-NodeName',$Node,'-GitHub')
+$psArgs = @(
+    '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $installerPath,
+    '-Role', $Role, '-NodeName', $Node, '-Unattended'
+)
 if ($Dry) { $psArgs += '-DryRun' }
-Write-Host "Running Install-HelmerAI.ps1 $($psArgs -join ' ')" -ForegroundColor Cyan
-& powershell.exe @psArgs
-$code = $LASTEXITCODE
+Write-Host "Running Install-HelmerAI.ps1 (unattended, local package)..." -ForegroundColor Cyan
+$prev = $ErrorActionPreference
+try {
+    $ErrorActionPreference = 'Continue'
+    & powershell.exe @psArgs
+    $code = $LASTEXITCODE
+} finally {
+    $ErrorActionPreference = $prev
+}
+Remove-Item $stage -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item $zip -Force -ErrorAction SilentlyContinue
 Write-Host "Install exit $code. Log: $Root\install.log" -ForegroundColor $(if ($code -eq 0) { 'Green' } else { 'Yellow' })
 if ($code -ne 0) { exit $code }
