@@ -1,6 +1,8 @@
-﻿# Helmer AI bootstrap 1.1.3 (secret-free, no GitHub sign-in).
-# Optional one-liner: irm .../Get-HelmerAI.ps1 | iex
-# Preferred: unzip HelmerAI-Install.zip and double-click Install-HelmerAI.bat (uses -File, not this script).
+﻿# Helmer AI bootstrap 1.1.47 (secret-free, no GitHub sign-in).
+# Install (Admin PowerShell): download release asset then -File (not irm|iex):
+#   $f="$env:TEMP\Get-HelmerAI.ps1"; irm https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest/download/Get-HelmerAI.ps1 -OutFile $f; powershell -ExecutionPolicy Bypass -File $f
+# Alternate: unzip HelmerAI-Install.zip and double-click Install-HelmerAI.bat.
+# This script has no top-level param() so `irm <raw main url> | iex` also parses if used.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $Role = if ($env:HELMERAI_ROLE) { $env:HELMERAI_ROLE } else { 'field' }
@@ -10,7 +12,10 @@ $Root = if ($env:HELMERAI_ROOT) { $env:HELMERAI_ROOT } else { 'C:\HelmerAI' }
 $PkgUrl = if ($env:HELMERAI_PKG_URL) { $env:HELMERAI_PKG_URL } else {
     'https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest/download/HelmerAI-Install.zip'
 }
-$BootstrapVer = '1.1.3'
+$GetUrl = if ($env:HELMERAI_GET_URL) { $env:HELMERAI_GET_URL } else {
+    'https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest/download/Get-HelmerAI.ps1'
+}
+$BootstrapVer = '1.1.47'
 
 try {
     $id = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -18,7 +23,9 @@ try {
     $isAdmin = $prin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 } catch { $isAdmin = $true }
 if (-not $isAdmin) {
-    $arg = '-NoProfile -ExecutionPolicy Bypass -Command "Invoke-RestMethod https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1 | Invoke-Expression"'
+    $f = Join-Path $env:TEMP 'Get-HelmerAI.ps1'
+    Invoke-RestMethod -Uri $GetUrl -OutFile $f
+    $arg = '-NoProfile -ExecutionPolicy Bypass -File "' + $f + '"'
     Start-Process -Verb RunAs -FilePath powershell.exe -ArgumentList $arg | Out-Null
     return
 }
