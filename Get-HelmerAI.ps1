@@ -1,4 +1,4 @@
-﻿# Helmer AI bootstrap 1.1.48 (secret-free, no GitHub sign-in).
+﻿# Helmer AI bootstrap 1.1.49 (secret-free, no GitHub sign-in).
 # Install (Admin PowerShell): download release asset then -File (not irm|iex):
 #   $f="$env:TEMP\Get-HelmerAI.ps1"; irm https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest/download/Get-HelmerAI.ps1 -OutFile $f; powershell -ExecutionPolicy Bypass -File $f
 # Alternate: unzip HelmerAI-Install.zip and double-click Install-HelmerAI.bat.
@@ -15,7 +15,7 @@ $PkgUrl = if ($env:HELMERAI_PKG_URL) { $env:HELMERAI_PKG_URL } else {
 $GetUrl = if ($env:HELMERAI_GET_URL) { $env:HELMERAI_GET_URL } else {
     'https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest/download/Get-HelmerAI.ps1'
 }
-$BootstrapVer = '1.1.48'
+$BootstrapVer = '1.1.49'
 
 try {
     $id = [Security.Principal.WindowsIdentity]::GetCurrent()
