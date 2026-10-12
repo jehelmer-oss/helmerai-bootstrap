@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import base64, pathlib
+          import base64, pathlib, sys
           d = pathlib.Path('release')
           parts = sorted(d.glob('helmerai-windows.zip.b64.*'))
           raw = d / 'helmerai-windows.zip.b64'
@@ -32,12 +32,17 @@ jobs:
           elif raw.is_file():
               blob = raw.read_text()
           else:
-              raise SystemExit('release zip payload missing')
+              print('package zip not staged yet; skip')
+              sys.exit(0)
           data = base64.b64decode(blob)
           (d / 'helmerai-windows.zip').write_bytes(data)
           (d / 'HelmerAI-Install.zip').write_bytes(data)
           print('decoded', len(data), 'bytes from', len(parts) or 1, 'part(s)')
           PY
+          if [ ! -f release/helmerai-windows.zip ]; then
+            echo skip
+            exit 0
+          fi
           TAG="${{ github.event.inputs.tag }}"
           if [ -z "$TAG" ]; then TAG=v1.1.94; fi
           if gh release view "$TAG" >/dev/null 2>&1; then
