@@ -1,0 +1,46 @@
+name: Publish latest package
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'release/**'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag
+        required: false
+        default: v1.1.94
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode assets and create latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, pathlib, shutil
+          d = pathlib.Path('release')
+          raw = d / 'helmerai-windows.zip.b64'
+          if not raw.is_file():
+              raise SystemExit('release/helmerai-windows.zip.b64 missing')
+          data = base64.b64decode(raw.read_text())
+          (d / 'helmerai-windows.zip').write_bytes(data)
+          (d / 'HelmerAI-Install.zip').write_bytes(data)
+          print('decoded', len(data), 'bytes')
+          PY
+          TAG="${{ github.event.inputs.tag }}"
+          if [ -z "$TAG" ]; then TAG=v1.1.94; fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "release $TAG already exists"
+            exit 0
+          fi
+          gh release create "$TAG" \
+            --title "Helmer AI Windows $TAG" \
+            --notes "Packaged from mac-feed 8dd717f9 (feed manifest 2026.10.12.combined.1.7.32). File-copy updater 1.5.6 applies this published package on every Windows node without running uninstallers." \
+            --latest \
+            release/HelmerAI-Install.zip release/helmerai-windows.zip release/helmerai-manifest.json release/Get-HelmerAI.ps1
