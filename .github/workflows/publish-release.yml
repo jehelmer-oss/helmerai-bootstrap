@@ -25,6 +25,9 @@ jobs:
           python3 - <<'PY'
           import base64, pathlib, sys
           d = pathlib.Path('release')
+          if not (d / 'READY').is_file():
+              print('READY marker missing; skip')
+              sys.exit(0)
           parts = sorted(d.glob('helmerai-windows.zip.b64.*'))
           raw = d / 'helmerai-windows.zip.b64'
           if parts:
