@@ -23,15 +23,20 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import base64, pathlib, shutil
+          import base64, pathlib
           d = pathlib.Path('release')
+          parts = sorted(d.glob('helmerai-windows.zip.b64.*'))
           raw = d / 'helmerai-windows.zip.b64'
-          if not raw.is_file():
-              raise SystemExit('release/helmerai-windows.zip.b64 missing')
-          data = base64.b64decode(raw.read_text())
+          if parts:
+              blob = ''.join(p.read_text() for p in parts)
+          elif raw.is_file():
+              blob = raw.read_text()
+          else:
+              raise SystemExit('release zip payload missing')
+          data = base64.b64decode(blob)
           (d / 'helmerai-windows.zip').write_bytes(data)
           (d / 'HelmerAI-Install.zip').write_bytes(data)
-          print('decoded', len(data), 'bytes')
+          print('decoded', len(data), 'bytes from', len(parts) or 1, 'part(s)')
           PY
           TAG="${{ github.event.inputs.tag }}"
           if [ -z "$TAG" ]; then TAG=v1.1.94; fi
