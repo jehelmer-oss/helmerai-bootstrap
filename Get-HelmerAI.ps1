@@ -1,4 +1,4 @@
-﻿# Helmer AI bootstrap 1.1.98 (secret-free, no GitHub sign-in).
+﻿# Helmer AI bootstrap 1.1.99 (secret-free, no GitHub sign-in).
 # Optional one-liner: unique TEMP file + -File (never a fixed Get-HelmerAI.ps1 path, never iex).
 # Preferred: unzip HelmerAI-Install.zip and double-click Install-HelmerAI.bat (uses -File, not this script).
 $ErrorActionPreference = 'Stop'
@@ -10,7 +10,7 @@ $Root = if ($env:HELMERAI_ROOT) { $env:HELMERAI_ROOT } else { 'C:\HelmerAI' }
 $PkgUrl = if ($env:HELMERAI_PKG_URL) { $env:HELMERAI_PKG_URL } else {
     'https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest/download/HelmerAI-Install.zip'
 }
-$BootstrapVer = '1.1.98'
+$BootstrapVer = '1.1.99'
 
 try {
     $id = [Security.Principal.WindowsIdentity]::GetCurrent()
