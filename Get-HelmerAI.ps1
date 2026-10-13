@@ -1,4 +1,6 @@
-﻿# Helmer AI bootstrap 1.1.136 (secret-free, no GitHub sign-in).
+# Helmer AI bootstrap 1.1.136 (secret-free, no GitHub sign-in).
+# Encoding: UTF-8 no BOM, ASCII-only. A leading BOM breaks `irm | iex` on Windows PowerShell 5.1
+# (Missing argument in parameter list; parser shows the BOM before this '#').
 # Optional one-liner: unique TEMP file + -File (never a fixed Get-HelmerAI.ps1 path, never iex).
 # Preferred: unzip HelmerAI-Install.zip and double-click Install-HelmerAI.bat (uses -File, not this script).
 $ErrorActionPreference = 'Stop'

@@ -17,6 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Strip UTF-8 BOM from published .ps1 (irm | iex / PS 5.1)
+        run: |
+          python3 tools/strip-ps1-bom.py Get-HelmerAI.ps1 release/Get-HelmerAI.ps1
+          python3 check-ascii-bom.py
       - name: Decode assets and create latest release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,6 +56,8 @@ jobs:
             echo "release $TAG already exists"
             exit 0
           fi
+          # PS 5.1 Out-File -Encoding utf8 writes a BOM; never upload one.
+          python3 tools/strip-ps1-bom.py Get-HelmerAI.ps1 release/Get-HelmerAI.ps1
           gh release create "$TAG" \
             --title "Helmer AI Windows $TAG" \
             --notes "Packaged from mac-feed 8dd717f9 (feed manifest 2026.10.12.combined.1.7.32). File-copy updater 1.5.6 applies this published package on every Windows node without running uninstallers." \
