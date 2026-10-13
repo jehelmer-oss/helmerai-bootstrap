@@ -7,10 +7,16 @@ One UAC Yes. No GitHub sign-in.
 Open PowerShell as administrator and paste:
 
 ```powershell
-$f="$env:TEMP\Get-HelmerAI.ps1"; irm https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest/download/Get-HelmerAI.ps1 -OutFile $f; powershell -ExecutionPolicy Bypass -File $f
+irm https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1 | iex
 ```
 
-This downloads the latest release `Get-HelmerAI.ps1` and runs it with `-File` (not `irm | iex`).
+Works on Windows PowerShell 5.1. `Get-HelmerAI.ps1` is UTF-8 without a BOM and ASCII-only so `irm | iex` can parse the downloaded string.
+
+Safer alternative (download, then `-File`):
+
+```powershell
+$f="$env:TEMP\Get-HelmerAI.ps1"; irm https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest/download/Get-HelmerAI.ps1 -OutFile $f; powershell -ExecutionPolicy Bypass -File $f
+```
 
 ## Double-click alternative
 

@@ -1,0 +1,23 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  raw-url-ps1-no-bom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail if any raw-URL .ps1 starts with a UTF-8 BOM or is not ASCII
+        run: python3 check-ascii-bom.py
+      - name: Checker rejects a BOM fixture
+        run: python3 tests/test_check_ascii_bom.py
+
+  irm-iex-ps51:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse irm output under Windows PowerShell 5.1 (powershell.exe)
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests\Test-IrmIexParse.ps1

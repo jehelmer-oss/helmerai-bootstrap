@@ -1,6 +1,9 @@
 # Helmer AI - Windows install (no GitHub login)
 #
-# Admin PowerShell (recommended):
+# Admin PowerShell (recommended; works on Windows PowerShell 5.1):
+irm https://raw.githubusercontent.com/jehelmer-oss/helmerai-bootstrap/main/Get-HelmerAI.ps1 | iex
+#
+# Safer alternative (download, then -File):
 $f="$env:TEMP\Get-HelmerAI.ps1"; irm https://github.com/jehelmer-oss/helmerai-bootstrap/releases/latest/download/Get-HelmerAI.ps1 -OutFile $f; powershell -ExecutionPolicy Bypass -File $f
 #
 # Or: download HelmerAI-Install.zip (Drive or GitHub release),
