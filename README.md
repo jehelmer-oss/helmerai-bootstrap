@@ -1,4 +1,4 @@
-# Helmer AI bootstrap (public, secret-free)
+# Helmer AI bootstrap (public, secret-free, unattended)
 
 One UAC Yes. No GitHub sign-in.
 
@@ -19,6 +19,6 @@ This downloads the latest release `Get-HelmerAI.ps1` and runs it with `-File` (n
 3. Double-click `Install-HelmerAI.bat`
 4. Click Yes on UAC
 
-The bat runs `Install-HelmerAI.ps1` interactively from the same folder via `powershell -File` (node name and role come from the PC; RustDesk password, Tailscale sign-in and auto-login prompts run). Set `HELMERAI_UNATTENDED=1` before the one-liner to skip prompts.
+The bat runs `Install-HelmerAI.ps1 -Unattended` from the same folder via `powershell -File`.
 
 No API keys or passwords in this repo or the release zip.
